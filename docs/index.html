@@ -22,7 +22,7 @@ img{max-width:100%;border-radius:8px;margin-top:8px}
 <div class="card"><div class="sub">이 화면을 만드는 컴퓨터</div><div class="big" id="pc"></div><div class="sub" id="where"></div></div>
 <div class="card"><div class="pct"><span id="p">0</span>%</div><div class="bar"><i id="b"></i></div><div class="sub" id="st"></div>
 <div class="sub" style="margin-top:6px">퍼센트는 「셀 수 있는 것」(단계 개수·채널진단 3부분)에만 진짜 숫자로 써요. 셀 수 없는 일은 가짜 퍼센트 대신 「경과 시간 · 진행 중」으로 보여 줘요.</div></div>
-<div class="card" id="decide"></div>
+<div class="card" id="decide"></div><div class="card" id="alt" style="display:none"></div><div class="card" id="rsv" style="display:none"></div>
 <div class="card"><div class="sub">0단계 · 채널진단 (매일 03:40 예약 · 블로그 → 유튜브 → 인스타)</div><div id="diag"></div></div>
 <div class="card" id="steps"></div>
 <div class="card"><div class="sub">오늘 고객소식</div><div id="core"></div></div>
@@ -40,8 +40,10 @@ document.getElementById('pc').textContent=r.컴퓨터;
 document.getElementById('where').textContent=r.어디;
 document.getElementById('p').textContent=r.퍼센트;document.getElementById('b').style.width=r.퍼센트+'%';
 const cur=r.단계.find(x=>x.상태=='지금');
-document.getElementById('st').textContent=!r.오늘기록있음?'오늘 아침 순서가 아직 시작되지 않았어요':r.끝남?'오늘 아침 순서 끝':(cur?('지금: '+cur.이름):'준비 중')+(r.실행중?' · 도는 중':' · 멈춘 것 같아요')+' · 마지막 기록 '+r.마지막기록+(r.시작?' · 시작 '+r.시작:'');
-document.getElementById('decide').innerHTML='<div class="sub">결정·조치할 것</div>'+(r.결정.length?r.결정.map(x=>`<div class="dec"><b class="bad">${E(x.제목)}</b>${x.줄?'<div class="sub">'+E(x.줄)+'</div>':''}<div>${E(x.방법)}</div></div>`).join(''):'<div class="ok">결정할 것 없음</div>');
+document.getElementById('st').textContent=!r.오늘기록있음?'오늘 아침 순서가 아직 시작되지 않았어요':r.끝남?'오늘 아침 순서 끝':(cur?('지금: '+cur.이름):'준비 중')+(r.실행중?(r.오래?' · 오래 걸려요 (30분 넘게 같은 차례)':' · 도는 중'):' · 멈춘 것 같아요')+' · 마지막 기록 '+r.마지막기록+(r.시작?' · 시작 '+r.시작:'');
+document.getElementById('decide').innerHTML='<div class="sub">결정·조치할 것</div>'+(r.결정.length?r.결정.map(x=>`<div class="dec"><b class="bad">${E(x.제목)}</b>${x.줄?'<div class="sub">'+E(x.줄)+'</div>':''}<div class="sub">누가: <b>${E(x.누가)}</b></div><div>${E(x.방법)}</div></div>`).join(''):'<div class="ok">결정할 것 없음</div>');
+const al=document.getElementById('alt');al.style.display=(r.대체||[]).length?'':'none';al.innerHTML='<div class="sub">정상 (대체 사용) — 실패 줄이 있었지만 다른 방법으로 잘 넘어갔어요</div>'+(r.대체||[]).map(l=>`<div class="sub ok">✓ ${E(l)}</div>`).join('');
+const rv=document.getElementById('rsv');rv.style.display=(r.예약||[]).length?'':'none';rv.innerHTML='<div class="sub">꺼져 있는 예약 작업 (왜 꺼졌는지)</div>'+(r.예약||[]).map(x=>`<div class="dec"><b>${E(x.이름)}</b> <span class="sub">${E(x.이유)}</span></div>`).join('');
 const c=r.채널진단;
 document.getElementById('diag').innerHTML=`<div class="big">${c.퍼센트}% <span class="sub">${E(c.요약)}</span></div><div class="bar"><i style="width:${c.퍼센트}%"></i></div>`+c.부분.map(x=>`<div class="s"><div class="r"><b>${dic[x.상태]}</b><span class="t">${E(x.이름)}</span><span class="h">${E(x.시간)}</span></div><div class="d"><div>${E(x.설명)}</div></div></div>`).join('');
 document.getElementById('steps').innerHTML='<div class="sub">아침 순서 (시작 시각은 오른쪽)</div>'+r.단계.map(x=>`<div class="s ${x.상태}"><div class="r"><b>${ic[x.상태]}</b><span class="t">${E(x.이름)}</span><span class="h">${E(x.시각||(x.상태=='다음'?'다음':''))}</span></div><div class="d"><div>무엇을: ${E(x.설명)}</div>${x.상태=='지금'?'<div>⏱ '+E(x.경과)+' · 진행 중 (셀 수 없어 퍼센트 없음)</div>':''}${(x.과정||[]).map(l=>'<div>· '+E(l)+'</div>').join('')}</div></div>`).join('');
