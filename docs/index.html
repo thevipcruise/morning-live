@@ -1,0 +1,56 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>아침 루틴 실시간</title><style>
+:root{--bg:#f6f7f9;--card:#fff;--tx:#1a1d21;--mut:#6b7280;--ac:#1f4fd8;--ok:#1b8a5a;--ln:#e5e7eb;--bad:#c0392b}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1216;--card:#181c22;--tx:#eef0f3;--mut:#9aa3af;--ac:#6c9bff;--ok:#4cc38a;--ln:#2a313a;--bad:#ff7b6b}}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 -apple-system,"Malgun Gothic",sans-serif}
+.w{max-width:600px;margin:0 auto;padding:16px}h1{font-size:18px;margin:4px 0 12px}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:14px;margin-bottom:12px}
+.bar{height:16px;background:var(--ln);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ac);width:0;transition:width .6s}
+.pct{font-size:34px;font-weight:700}.sub{color:var(--mut);font-size:13px}.big{font-size:20px;font-weight:700}
+.s{padding:9px 10px;border-radius:10px;margin:3px 0;border:1px solid transparent}
+.r{display:flex;gap:10px;align-items:center}.r b{width:22px;text-align:center}.t{flex:1;font-size:14px}.h{font-size:12px;color:var(--mut)}
+.d{margin:4px 0 0 32px;font-size:12px;color:var(--mut)}.d div{margin:1px 0}
+.s.끝 .t{color:var(--mut)}.s.끝 b{color:var(--ok)}
+.s.지금{background:color-mix(in srgb,var(--ac) 14%,transparent);border-color:var(--ac);font-weight:700;animation:p 1.6s infinite}
+.s.다음{border-color:var(--ln);border-style:dashed}.s.건너뜀 .t{color:var(--mut);text-decoration:line-through}
+@keyframes p{50%{box-shadow:0 0 0 4px color-mix(in srgb,var(--ac) 25%,transparent)}}
+.k{display:flex;justify-content:space-between;padding:7px 0;border-top:1px solid var(--ln)}.k:first-child{border-top:0}
+.bad{color:var(--bad)}.ok{color:var(--ok)}.dec{padding:8px 0;border-top:1px solid var(--ln)}.dec:first-child{border-top:0}
+button{font:inherit;padding:6px 14px;border-radius:8px;border:1px solid var(--ac);background:var(--card);color:var(--ac)}
+img{max-width:100%;border-radius:8px;margin-top:8px}
+</style></head><body><div class="w"><h1>아침 루틴 실시간 · <span id="now"></span></h1>
+<div class="card"><div class="sub">이 화면을 만드는 컴퓨터</div><div class="big" id="pc"></div><div class="sub" id="where"></div></div>
+<div class="card"><div class="pct"><span id="p">0</span>%</div><div class="bar"><i id="b"></i></div><div class="sub" id="st"></div>
+<div class="sub" style="margin-top:6px">퍼센트는 「셀 수 있는 것」(단계 개수·채널진단 3부분)에만 진짜 숫자로 써요. 셀 수 없는 일은 가짜 퍼센트 대신 「경과 시간 · 진행 중」으로 보여 줘요.</div></div>
+<div class="card" id="decide"></div>
+<div class="card"><div class="sub">0단계 · 채널진단 (매일 03:40 예약 · 블로그 → 유튜브 → 인스타)</div><div id="diag"></div></div>
+<div class="card" id="steps"></div>
+<div class="card"><div class="sub">오늘 고객소식</div><div id="core"></div></div>
+<div class="card" id="scr" style="display:none"><div class="sub">노트북 화면 보기 (같은 와이파이에서만 · 5초마다)</div>
+<button id="sb">화면 보기 켜기</button><div><img id="si" alt=""></div></div>
+<div class="sub" id="ip"></div></div><script>
+const PUB=location.hostname.endsWith('github.io');
+const ic={끝:'✓',지금:'▶',다음:'·',대기:'○',건너뜀:'–'};
+const dic={끝:'✓',진행중:'▶',대기:'○',실패:'✗',건너뜀:'–'};
+const E=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+async function go(){try{
+const r=await (await fetch(PUB?'data.json?t='+Date.now():'/api')).json();
+document.getElementById('now').textContent=(PUB?'갱신 ':'')+r.지금;
+document.getElementById('pc').textContent=r.컴퓨터;
+document.getElementById('where').textContent=r.어디;
+document.getElementById('p').textContent=r.퍼센트;document.getElementById('b').style.width=r.퍼센트+'%';
+const cur=r.단계.find(x=>x.상태=='지금');
+document.getElementById('st').textContent=!r.오늘기록있음?'오늘 아침 순서가 아직 시작되지 않았어요':r.끝남?'오늘 아침 순서 끝':(cur?('지금: '+cur.이름):'준비 중')+(r.실행중?' · 도는 중':' · 멈춘 것 같아요')+' · 마지막 기록 '+r.마지막기록+(r.시작?' · 시작 '+r.시작:'');
+document.getElementById('decide').innerHTML='<div class="sub">결정·조치할 것</div>'+(r.결정.length?r.결정.map(x=>`<div class="dec"><b class="bad">${E(x.제목)}</b>${x.줄?'<div class="sub">'+E(x.줄)+'</div>':''}<div>${E(x.방법)}</div></div>`).join(''):'<div class="ok">결정할 것 없음</div>');
+const c=r.채널진단;
+document.getElementById('diag').innerHTML=`<div class="big">${c.퍼센트}% <span class="sub">${E(c.요약)}</span></div><div class="bar"><i style="width:${c.퍼센트}%"></i></div>`+c.부분.map(x=>`<div class="s"><div class="r"><b>${dic[x.상태]}</b><span class="t">${E(x.이름)}</span><span class="h">${E(x.시간)}</span></div><div class="d"><div>${E(x.설명)}</div></div></div>`).join('');
+document.getElementById('steps').innerHTML='<div class="sub">아침 순서 (시작 시각은 오른쪽)</div>'+r.단계.map(x=>`<div class="s ${x.상태}"><div class="r"><b>${ic[x.상태]}</b><span class="t">${E(x.이름)}</span><span class="h">${E(x.시각||(x.상태=='다음'?'다음':''))}</span></div><div class="d"><div>무엇을: ${E(x.설명)}</div>${x.상태=='지금'?'<div>⏱ '+E(x.경과)+' · 진행 중 (셀 수 없어 퍼센트 없음)</div>':''}${(x.과정||[]).map(l=>'<div>· '+E(l)+'</div>').join('')}</div></div>`).join('');
+document.getElementById('core').innerHTML=r.핵심.map(x=>`<div class="k"><span>${x.됨?'✓':'○'} ${E(x.이름)}</span><span class="sub">${E(x.값||'')}</span></div>`).join('');
+}catch(e){}}
+let tm=null;
+function shot(){document.getElementById('si').src='/screen.jpg?t='+Date.now()}
+if(!PUB){document.getElementById('scr').style.display='';
+document.getElementById('sb').onclick=function(){if(tm){clearInterval(tm);tm=null;this.textContent='화면 보기 켜기';document.getElementById('si').removeAttribute('src')}else{shot();tm=setInterval(shot,5000);this.textContent='화면 보기 끄기'}}}
+go();setInterval(go,PUB?15000:4000);
+document.getElementById('ip').textContent=PUB?'집 밖 공개 화면 · 고객 이름·전화·화면은 올리지 않아요 · 약 1분 늦을 수 있어요':'같은 와이파이에서 이 주소: '+location.host;
+</script></body></html>
