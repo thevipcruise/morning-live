@@ -22,7 +22,7 @@ img{max-width:100%;border-radius:8px;margin-top:8px}
 <div class="card"><div class="sub">이 화면을 만드는 컴퓨터</div><div class="big" id="pc"></div><div class="sub" id="where"></div></div>
 <div class="card"><div class="pct"><span id="p">0</span>%</div><div class="bar"><i id="b"></i></div><div class="sub" id="st"></div>
 <div class="sub" style="margin-top:6px">퍼센트는 「셀 수 있는 것」(단계 개수·채널진단 3부분)에만 진짜 숫자로 써요. 셀 수 없는 일은 가짜 퍼센트 대신 「경과 시간 · 진행 중」으로 보여 줘요.</div></div>
-<div class="card" id="decide"></div><div class="card" id="alt" style="display:none"></div><div class="card" id="rsv" style="display:none"></div>
+<div class="card" id="sum" style="font-size:17px;line-height:1.7"></div><div class="card" id="decide"></div><div class="card" id="alt" style="display:none"></div><div class="card" id="rsv" style="display:none"></div>
 <div class="card"><div class="sub">0단계 · 채널진단 (매일 03:40 예약 · 블로그 → 유튜브 → 인스타)</div><div id="diag"></div></div>
 <div class="card" id="steps"></div>
 <div class="card"><div class="sub">오늘 고객소식</div><div id="core"></div></div>
@@ -38,6 +38,7 @@ const r=await (await fetch(PUB?'data.json?t='+Date.now():'/api')).json();
 document.getElementById('now').textContent=(PUB?'갱신 ':'')+r.지금;
 document.getElementById('pc').textContent=r.컴퓨터;
 document.getElementById('where').textContent=r.어디;
+{const y=r.요약||{},cm={'완료':'✅','진행중':'⏳','안 됨':'❌','대기':'·','없음':'–'};document.getElementById('sum').innerHTML='<div class="sub">한눈에 보기</div><div><b>보험</b> '+E(y.보험||'')+((y.보험이유||[]).length?'<div class="sub">이유: '+(y.보험이유||[]).map(E).join(' / ')+'</div>':'')+'</div><div>'+(y.채널||[]).map(c=>(cm[c[1]]||'')+' '+E(c[0])+' '+E(c[1])).join(' &nbsp; ')+'</div>';}
 document.getElementById('p').textContent=r.퍼센트;document.getElementById('b').style.width=r.퍼센트+'%';
 const cur=r.단계.find(x=>x.상태=='지금');
 document.getElementById('st').textContent=!r.오늘기록있음?'오늘 아침 순서가 아직 시작되지 않았어요':r.끝남?'오늘 아침 순서 끝':(cur?('지금: '+cur.이름):'준비 중')+(r.실행중?(r.오래?' · 오래 걸려요 (30분 넘게 같은 차례)':' · 도는 중'):' · 멈춘 것 같아요')+' · 마지막 기록 '+r.마지막기록+(r.시작?' · 시작 '+r.시작:'');
