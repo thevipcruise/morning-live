@@ -38,7 +38,7 @@ const r=await (await fetch(PUB?'data.json?t='+Date.now():'/api')).json();
 document.getElementById('now').textContent=(PUB?'갱신 ':'')+r.지금;
 document.getElementById('pc').textContent=r.컴퓨터;
 document.getElementById('where').textContent=r.어디;
-{const y=r.요약||{},cm={'완료':'✅','진행중':'⏳','안 됨':'❌','대기':'·','없음':'–'};document.getElementById('sum').innerHTML='<div class="sub">한눈에 보기</div><div><b>보험</b> '+E(y.보험||'')+((y.보험이유||[]).length?'<div class="sub">이유: '+(y.보험이유||[]).map(E).join(' / ')+'</div>':'')+'</div><div>'+(y.채널||[]).map(c=>(cm[c[1]]||'')+' '+E(c[0])+' '+E(c[1])).join(' &nbsp; ')+'</div>';}
+{const y=r.요약||{},cm={'완료':'✅','진행중':'⏳','안 됨':'❌','대기':'⚪','없음':'–'};document.getElementById('sum').innerHTML='<div class="sub">한눈에 보기</div><div><b>보험</b> '+E(y.보험||'')+((y.보험이유||[]).length?'<div class="sub">이유: '+(y.보험이유||[]).map(E).join(' / ')+'</div>':'')+'</div>'+(y.채널||[]).map(c=>'<div>'+(cm[c[1]]||'')+' <b>'+E(c[0])+'</b> '+E(c[1])+'</div>').join('');}
 document.getElementById('p').textContent=r.퍼센트;document.getElementById('b').style.width=r.퍼센트+'%';
 const cur=r.단계.find(x=>x.상태=='지금');
 document.getElementById('st').textContent=!r.오늘기록있음?'오늘 아침 순서가 아직 시작되지 않았어요':r.끝남?'오늘 아침 순서 끝':(cur?('지금: '+cur.이름):'준비 중')+(r.실행중?(r.오래?' · 오래 걸려요 (30분 넘게 같은 차례)':' · 도는 중'):' · 멈춘 것 같아요')+' · 마지막 기록 '+r.마지막기록+(r.시작?' · 시작 '+r.시작:'');
